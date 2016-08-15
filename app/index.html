@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="styles/main.css">
   <script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyCIbvu-3xz06tLmKHZBeFShpSOsxrppNUM'></script>
   <script src='scripts/vendor/jquery.min.js'></script>
+  <script src='scripts/vendor/lodash.min.js'></script>
   <script src='scripts/vendor/knockout-latest.js'></script>
   <script src='scripts/main.js'></script>
 </head>
@@ -68,8 +69,40 @@
     google.maps.event.addListener(marker, 'click', function () {
       infowindow.open(map, marker);
     });
+
+    map.addListener('bounds_changed', _.debounce(loadBars, 3000));
+
     infowindow.open(map, marker);
+
+    function loadBars() {
+      console.log('bounds_changed', map);
+      var lat = map.center.lat(),
+        lng = map.center.lng();
+      console.log('lat', lat, 'lng', lng);
+
+      // dont ask 4square on big zooms
+      if (map.zoom < 18) return;
+
+      $.get('https://api.foursquare.com/v2/venues/explore', {
+        ll: lat + ',' + lng,
+        radius: 2000,
+        section: 'drinks',
+        client_id: 'E54BQ11LCWJ15Q0FH4MELITI2CZQ5KSJOU53TNRARJ3HHNXN',
+        client_secret: 'T4O0ZURMG00IGUTU4NKSQZ4DH0E5LGLMDAE20OJWPXMBD10Y',
+        v: 20160815
+      }, function (res) {
+        console.log('4 square', res);
+        console.log(res.response.groups[0].items.map(function(item){
+          var lat = item.venue.location.lat,
+            lng = item.venue.location.lng,
+            name = item.venue.name;
+          var marker = new google.maps.Marker({map: map, position: new google.maps.LatLng(lat, lng)});
+          return name + ': ' + lat + ',' + lng;
+        }))
+      });
+    }
   }
+
   $(init_map());
 </script>
 <!-- Built with love using Web Starter Kit -->
