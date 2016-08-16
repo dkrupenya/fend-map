@@ -80,4 +80,79 @@
   }
 
   // Your custom JavaScript goes here
+
 })();
+
+const app = {};
+
+app.model = {
+   map: null, // google map object
+   places: ko.observableArray([]), // places marked on the map
+};
+
+app.controller = {
+
+};
+
+$(function() {
+  ko.applyBindings(app.model);
+  initMap();
+
+});
+
+
+function initMap() {
+  var myOptions = {
+    zoom: 13,
+    center: new google.maps.LatLng(37.7703706, -122.3871226),
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+  app.model.map = new google.maps.Map(document.getElementById('google-map'), myOptions);
+  var map = app.model.map;
+  marker = new google.maps.Marker({map: map, position: new google.maps.LatLng(37.7703706, -122.3871226)});
+  infowindow = new google.maps.InfoWindow({content: '<strong>PathFind</strong>'});
+  google.maps.event.addListener(marker, 'click', function () {
+    infowindow.open(map, marker);
+  });
+
+  map.addListener('bounds_changed', _.debounce(loadBars, 3000));
+
+  //infowindow.open(map, marker);
+
+  function loadBars() {
+    console.log('bounds_changed', map);
+    var lat = map.center.lat(),
+      lng = map.center.lng();
+    console.log('lat', lat, 'lng', lng);
+
+    // dont ask 4square on big areas
+    if (map.zoom < 17) return;
+
+    $.get('https://api.foursquare.com/v2/venues/explore', {
+      ll: lat + ',' + lng,
+      radius: 2000,
+      section: 'drinks',
+      client_id: 'E54BQ11LCWJ15Q0FH4MELITI2CZQ5KSJOU53TNRARJ3HHNXN',
+      client_secret: 'T4O0ZURMG00IGUTU4NKSQZ4DH0E5LGLMDAE20OJWPXMBD10Y',
+      v: 20160815
+    }, function (res) {
+
+      app.model.places.removeAll();
+      console.log(app.model.places());
+      console.log('4 square', res);
+      console.log(res.response.groups[0].items.map(function(item){
+        var lat = item.venue.location.lat,
+          lng = item.venue.location.lng,
+          name = item.venue.name;
+        var place = {
+          marker: new google.maps.Marker({map: map, position: new google.maps.LatLng(lat, lng)}),
+          data: item
+        };
+        app.model.places.push(place);
+
+        return name + ': ' + lat + ',' + lng;
+      }));
+      console.log('after add', app.model.places());
+    });
+  }
+}

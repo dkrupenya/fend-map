@@ -26,8 +26,21 @@ html, body {
   height: 100%;
 }
 
+.app-header {
+  height: 100px;
+}
+.app-main {
+  height: calc(100% - 100px);
+  display: flex;
+}
+.app-sidebar {
+  width: 300px;
+  background-color: #fffbb1;
+}
+
 .google-map {
   height: 100%;
+  width: calc(100% - 300px);
 }
 
 

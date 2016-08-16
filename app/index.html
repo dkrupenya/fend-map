@@ -44,7 +44,19 @@
 </head>
 <body>
   <!-- Add your site or app content here -->
-  <div id="google-map" class="google-map"></div>
+  <header class="app-header">
+
+  </header>
+  <main class="app-main">
+    <div class="app-sidebar">
+      <!-- ko foreach: places() -->
+      <div class="place-list__name" data-bind="text: data.venue.name"></div>
+      <!-- /ko -->
+    </div>
+    <div id="google-map" class="google-map"></div>
+
+  </main>
+
 
 
 <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
@@ -55,55 +67,6 @@
   //      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
   //      ga('create', 'UA-XXXXX-X', 'auto');
   //      ga('send', 'pageview');
-</script>
-<script>
-  function init_map() {
-    var myOptions = {
-      zoom: 12,
-      center: new google.maps.LatLng(37.7703706, -122.3871226),
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-    map = new google.maps.Map(document.getElementById('google-map'), myOptions);
-    marker = new google.maps.Marker({map: map, position: new google.maps.LatLng(37.7703706, -122.3871226)});
-    infowindow = new google.maps.InfoWindow({content: '<strong>PathFind</strong>'});
-    google.maps.event.addListener(marker, 'click', function () {
-      infowindow.open(map, marker);
-    });
-
-    map.addListener('bounds_changed', _.debounce(loadBars, 3000));
-
-    infowindow.open(map, marker);
-
-    function loadBars() {
-      console.log('bounds_changed', map);
-      var lat = map.center.lat(),
-        lng = map.center.lng();
-      console.log('lat', lat, 'lng', lng);
-
-      // dont ask 4square on big zooms
-      if (map.zoom < 18) return;
-
-      $.get('https://api.foursquare.com/v2/venues/explore', {
-        ll: lat + ',' + lng,
-        radius: 2000,
-        section: 'drinks',
-        client_id: 'E54BQ11LCWJ15Q0FH4MELITI2CZQ5KSJOU53TNRARJ3HHNXN',
-        client_secret: 'T4O0ZURMG00IGUTU4NKSQZ4DH0E5LGLMDAE20OJWPXMBD10Y',
-        v: 20160815
-      }, function (res) {
-        console.log('4 square', res);
-        console.log(res.response.groups[0].items.map(function(item){
-          var lat = item.venue.location.lat,
-            lng = item.venue.location.lng,
-            name = item.venue.name;
-          var marker = new google.maps.Marker({map: map, position: new google.maps.LatLng(lat, lng)});
-          return name + ': ' + lat + ',' + lng;
-        }))
-      });
-    }
-  }
-
-  $(init_map());
 </script>
 <!-- Built with love using Web Starter Kit -->
 </body>
