@@ -54,11 +54,25 @@
   </header>
   <main class="app-main">
     <div class="app-sidebar">
-      <!-- ko foreach: places -->
+      <input type="text" data-bind="textInput: textFilter"/>
+      <!-- ko foreach: filteredPlaces -->
       <div class="place-list__name" data-bind="text: $data.name, click: $parent.onClickPlace.bind(null, $data), css: {'is-selected': $data.isSelected}"></div>
       <!-- /ko -->
     </div>
-    <div id="google-map" class="google-map"></div>
+    <div class="map-wrapper">
+      <div id="google-map" class="google-map"></div>
+      <div class="place-infocus" data-bind="with: placeInFocus">
+        <div>Title: <span data-bind="text: name"></span></div>
+        <div>URL: <span data-bind="text: stash.venue.url"></span></div>
+        <div>Rating: <span data-bind="text: stash.venue.rating"></span></div>
+        <div>phone: <span data-bind="text: stash.venue.contact.formattedPhone"></span></div>
+        <div>categories:
+          <!-- ko foreach: stash.venue.categories -->
+          <span data-bind="text: $data.shortName"></span>,
+          <!-- /ko -->
+        </div>
+      </div>
+    </div>
 
   </main>
 

@@ -31,6 +31,19 @@
     markers: new WeakMap(),
     selectedPlaces: new Set(),
 
+    placeInFocus: ko.observable(),
+    isPlaceInFocusVisible: ko.observable(false),
+
+    textFilter: ko.observable(''),
+
+    filteredPlaces: ko.pureComputed(() => {
+      let text = app.model.textFilter().trim().toLowerCase(),
+          places = app.model.places();
+      if (!text) return places;
+
+      return _.filter(places, place => place.name.toLowerCase().indexOf(text) !== -1 );
+    }),
+
     onClickPlace: onClickPalace,
     onClickMarker: onClickMarker,
   };
@@ -113,10 +126,12 @@
       selected.marker.setIcon(G_MARKER);
       app.model.selectedPlaces.delete(selected);
     }
-    //add this to selected
+    //add place to selected
     place.isSelected(true);
     app.model.selectedPlaces.add(place);
     place.marker.setIcon(G_MARKER_SELECTED);
+    app.model.placeInFocus(place);
+    app.model.isPlaceInFocusVisible(true);
   }
 
   function onClickMarker() {
