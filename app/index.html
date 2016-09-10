@@ -37,10 +37,15 @@
   -->
   <link rel="stylesheet" href="styles/main.css">
   <script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyCIbvu-3xz06tLmKHZBeFShpSOsxrppNUM'></script>
+
   <script src='scripts/vendor/jquery.min.js'></script>
   <script src='scripts/vendor/lodash.min.js'></script>
   <script src='scripts/vendor/knockout-latest.js'></script>
   <script src='scripts/main.js'></script>
+
+  <!--
+  <script src='scripts/main.min.js'></script>
+  -->
 </head>
 <body>
   <!-- Add your site or app content here -->
@@ -49,8 +54,8 @@
   </header>
   <main class="app-main">
     <div class="app-sidebar">
-      <!-- ko foreach: places() -->
-      <div class="place-list__name" data-bind="text: data.venue.name"></div>
+      <!-- ko foreach: places -->
+      <div class="place-list__name" data-bind="text: $data.name, click: $parent.onClickPlace.bind(null, $data), css: {'is-selected': $data.isSelected}"></div>
       <!-- /ko -->
     </div>
     <div id="google-map" class="google-map"></div>

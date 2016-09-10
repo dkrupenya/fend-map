@@ -43,4 +43,10 @@ html, body {
   width: calc(100% - 300px);
 }
 
+.place-list__name {
+  &.is-selected {
+    background-color: red;
+  }
+}
+
 

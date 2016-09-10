@@ -39,10 +39,10 @@ const reload = browserSync.reload;
 
 // Lint JavaScript
 gulp.task('lint', () =>
-  gulp.src('app/scripts/**/*.js')
-    .pipe($.eslint())
-    .pipe($.eslint.format())
-    .pipe($.if(!browserSync.active, $.eslint.failOnError()))
+  gulp.src('app/scripts/*.js')
+    // .pipe($.eslint())
+    // .pipe($.eslint.format())
+    // .pipe($.if(!browserSync.active, $.eslint.failOnError()))
 );
 
 // Optimize images
@@ -109,6 +109,9 @@ gulp.task('scripts', () =>
       // Note: Since we are not using useref in the scripts build pipeline,
       //       you need to explicitly list your scripts here in the right order
       //       to be correctly concatenated
+      './app/scripts/vendor/jquery.min.js',
+      './app/scripts/vendor/knockout-latest.js',
+      './app/scripts/vendor/lodash.min.js',
       './app/scripts/main.js'
       // Other scripts
     ])
@@ -118,7 +121,7 @@ gulp.task('scripts', () =>
       .pipe($.sourcemaps.write())
       .pipe(gulp.dest('.tmp/scripts'))
       .pipe($.concat('main.min.js'))
-      .pipe($.uglify({preserveComments: 'some'}))
+      //.pipe($.uglify({preserveComments: 'some'}))
       // Output files
       .pipe($.size({title: 'scripts'}))
       .pipe($.sourcemaps.write('.'))
@@ -128,15 +131,15 @@ gulp.task('scripts', () =>
 // Scan your HTML for assets & optimize them
 gulp.task('html', () => {
   return gulp.src('app/**/*.html')
-    .pipe($.useref({searchPath: '{.tmp,app}'}))
-    // Remove any unused CSS
-    .pipe($.if('*.css', $.uncss({
-      html: [
-        'app/index.html'
-      ],
-      // CSS Selectors for UnCSS to ignore
-      ignore: []
-    })))
+    // .pipe($.useref({searchPath: '{.tmp,app}'}))
+    // // Remove any unused CSS
+    // .pipe($.if('*.css', $.uncss({
+    //   html: [
+    //     'app/index.html'
+    //   ],
+    //   // CSS Selectors for UnCSS to ignore
+    //   ignore: []
+    // })))
 
     // Concatenate and minify styles
     // In case you are still using useref build blocks
@@ -145,7 +148,7 @@ gulp.task('html', () => {
     // Minify any HTML
     .pipe($.if('*.html', $.htmlmin({
       removeComments: true,
-      collapseWhitespace: true,
+      //collapseWhitespace: true,
       collapseBooleanAttributes: true,
       removeAttributeQuotes: true,
       removeRedundantAttributes: true,
@@ -204,8 +207,7 @@ gulp.task('serve:dist', ['default'], () =>
 gulp.task('default', ['clean'], cb =>
   runSequence(
     'styles',
-    ['lint', 'html', 'scripts', 'images', 'copy'],
-    'generate-service-worker',
+    ['html', 'scripts', 'images', 'copy'],
     cb
   )
 );
@@ -222,41 +224,41 @@ gulp.task('pagespeed', cb =>
 );
 
 // Copy over the scripts that are used in importScripts as part of the generate-service-worker task.
-gulp.task('copy-sw-scripts', () => {
-  return gulp.src(['node_modules/sw-toolbox/sw-toolbox.js', 'app/scripts/sw/runtime-caching.js'])
-    .pipe(gulp.dest('dist/scripts/sw'));
-});
+// gulp.task('copy-sw-scripts', () => {
+//   return gulp.src(['node_modules/sw-toolbox/sw-toolbox.js', 'app/scripts/sw/runtime-caching.js'])
+//     .pipe(gulp.dest('dist/scripts/sw'));
+// });
 
 // See http://www.html5rocks.com/en/tutorials/service-worker/introduction/ for
 // an in-depth explanation of what service workers are and why you should care.
 // Generate a service worker file that will provide offline functionality for
 // local resources. This should only be done for the 'dist' directory, to allow
 // live reload to work as expected when serving from the 'app' directory.
-gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
-  const rootDir = 'dist';
-  const filepath = path.join(rootDir, 'service-worker.js');
-
-  return swPrecache.write(filepath, {
-    // Used to avoid cache conflicts when serving on localhost.
-    cacheId: pkg.name || 'web-starter-kit',
-    // sw-toolbox.js needs to be listed first. It sets up methods used in runtime-caching.js.
-    importScripts: [
-      'scripts/sw/sw-toolbox.js',
-      'scripts/sw/runtime-caching.js'
-    ],
-    staticFileGlobs: [
-      // Add/remove glob patterns to match your directory setup.
-      `${rootDir}/images/**/*`,
-      `${rootDir}/scripts/**/*.js`,
-      `${rootDir}/styles/**/*.css`,
-      `${rootDir}/*.{html,json}`
-    ],
-    // Translates a static file path to the relative URL that it's served from.
-    // This is '/' rather than path.sep because the paths returned from
-    // glob always use '/'.
-    stripPrefix: rootDir + '/'
-  });
-});
+// gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
+//   const rootDir = 'dist';
+//   const filepath = path.join(rootDir, 'service-worker.js');
+//
+//   return swPrecache.write(filepath, {
+//     // Used to avoid cache conflicts when serving on localhost.
+//     cacheId: pkg.name || 'web-starter-kit',
+//     // sw-toolbox.js needs to be listed first. It sets up methods used in runtime-caching.js.
+//     importScripts: [
+//       'scripts/sw/sw-toolbox.js',
+//       'scripts/sw/runtime-caching.js'
+//     ],
+//     staticFileGlobs: [
+//       // Add/remove glob patterns to match your directory setup.
+//       `${rootDir}/images/**/*`,
+//       `${rootDir}/scripts/**/*.js`,
+//       `${rootDir}/styles/**/*.css`,
+//       `${rootDir}/*.{html,json}`
+//     ],
+//     // Translates a static file path to the relative URL that it's served from.
+//     // This is '/' rather than path.sep because the paths returned from
+//     // glob always use '/'.
+//     stripPrefix: rootDir + '/'
+//   });
+// });
 
 // Load custom tasks from the `tasks` directory
 // Run: `npm install --save-dev require-dir` from the command-line
