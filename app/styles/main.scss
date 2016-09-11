@@ -21,27 +21,46 @@ will be correctly compiled during `gulp serve` and `gulp`
 
 html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
-  margin: 0;
-  padding: 0;
-  height: 100%;
+  //margin: 0;
+  //padding: 0;
+  //height: 100%;
 }
 
 .app-header {
-  height: 100px;
 }
+
 .app-main {
-  height: calc(100% - 100px);
-  display: flex;
+  height: calc(100% - 164px);
 }
+
+footer.app-footer {
+  padding: 16px;
+  .mdl-logo {
+    line-height: 32px;
+  }
+}
+
+.app-spinner {
+  margin-left: 32px;
+}
+
+.app-search {
+  display: flex;
+  i {
+    line-height: 28px;
+    padding: 20px 6px;
+  }
+}
+
 .app-sidebar {
-  width: 300px;
-  background-color: #fffbb1;
+  //width: 300px;
+  //background-color: #fffbb1;
 }
 
 .map-wrapper {
   height: 100%;
-  width: calc(100% - 300px);
-  position: relative;
+  //width: calc(100% - 300px);
+  //position: relative;
 }
 
 .google-map {
@@ -49,6 +68,7 @@ html, body {
   height: 100%;
 }
 
+/*
 .place-list__name {
   &.is-selected {
     background-color: red;
@@ -64,3 +84,4 @@ html, body {
   background-color: #0095dd;
 }
 
+*/

@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="">
+  <meta name="description" content="Find nearest place to drink. Don't forget to invite friends">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
+  <title>Nearest Pub</title>
 
   <!-- Disable tap highlight on IE -->
   <meta name="msapplication-tap-highlight" content="no">
@@ -35,6 +35,12 @@
   <!--
   <link rel="canonical" href="http://www.example.com/">
   -->
+  <!-- MD icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.blue_grey-teal.min.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script defer src="https://code.getmdl.io/1.2.1/material.min.js"></script>
+
   <link rel="stylesheet" href="styles/main.css">
   <script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyCIbvu-3xz06tLmKHZBeFShpSOsxrppNUM'></script>
 
@@ -48,34 +54,61 @@
   -->
 </head>
 <body>
-  <!-- Add your site or app content here -->
-  <header class="app-header">
-
-  </header>
-  <main class="app-main">
-    <div class="app-sidebar">
-      <input type="text" data-bind="textInput: textFilter"/>
-      <!-- ko foreach: filteredPlaces -->
-      <div class="place-list__name" data-bind="text: $data.name, click: $parent.onClickPlace.bind(null, $data), css: {'is-selected': $data.isSelected}"></div>
-      <!-- /ko -->
-    </div>
-    <div class="map-wrapper">
-      <div id="google-map" class="google-map"></div>
-      <div class="place-infocus" data-bind="with: placeInFocus">
-        <div>Title: <span data-bind="text: name"></span></div>
-        <div>URL: <span data-bind="text: stash.venue.url"></span></div>
-        <div>Rating: <span data-bind="text: stash.venue.rating"></span></div>
-        <div>phone: <span data-bind="text: stash.venue.contact.formattedPhone"></span></div>
-        <div>categories:
-          <!-- ko foreach: stash.venue.categories -->
-          <span data-bind="text: $data.shortName"></span>,
-          <!-- /ko -->
+<div class="mdl-layout__container">
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer has-drawer is-upgraded">
+    <header class="mdl-layout__header app-header">
+      <div class="mdl-layout__drawer-button" tabindex="0" role="button" aria-expanded="true">
+        <i class="material-icons">hamburger</i>
+      </div>
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title">Two Beer or Not Two Beer</span>
+        <span class="app-spinner mdl-spinner mdl-js-spinner is-active"></span>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer app-sidebar">
+      <div class="app-search">
+        <i class="material-icons">search</i>
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" id="filter" data-bind="textInput: textFilter">
+          <label class="mdl-textfield__label" for="filter">Filter...</label>
         </div>
       </div>
+
+      <!-- pubs list -->
+      <ul class="demo-list-item mdl-list">
+        <!-- ko foreach: filteredPlaces -->
+        <li class="mdl-list__item"
+            data-bind="click: $parent.onClickPlace.bind(null, $data), css: {'is-selected': $data.isSelected}">
+          <span class="mdl-list__item-primary-content" data-bind="text: $data.name"></span>
+        </li>
+        <!-- /ko -->
+      </ul>
+
     </div>
+    <main class="mdl-layout__content app-main">
+      <div class="map-wrapper">
+        <div id="google-map" class="google-map"></div>
+        <div class="place-infocus" data-bind="with: placeInFocus">
+          <div>Title: <span data-bind="text: name"></span></div>
+          <div>URL: <span data-bind="text: stash.venue.url"></span></div>
+          <div>phone: <span data-bind="text: stash.venue.contact.formattedPhone"></span></div>
+          <div>Rating: <span data-bind="text: stash.venue.rating"></span></div>
+          <div>categories:
+            <!-- ko foreach: stash.venue.categories -->
+            <span data-bind="text: $data.shortName"></span>,
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
 
-  </main>
-
+    </main>
+    <footer class="app-footer mdl-mini-footer">
+      <div class="mdl-mini-footer__right-section">
+        <div class="mdl-logo">Two Beer or not Two Beer, 2016</div>
+      </div>
+    </footer>
+  </div >
+</div>
 
 
 <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
