@@ -22,13 +22,14 @@
 
   // Your custom JavaScript goes here
   const app = {};
+  let lastQueryLocation = new google.maps.LatLng({lat: 0, lng: 0});
 
   app.controller = {};
 
   app.model = {
     map: null, // google map object
     places: ko.observableArray([]), // places marked on the map
-    placesHash: new WeakMap(),
+    placesHash: new Map(),
     markers: new WeakMap(),
     selectedPlaces: new Set(),
 
@@ -44,6 +45,8 @@
 
       return _.filter(places, place => place.name.toLowerCase().indexOf(text) !== -1 );
     }),
+
+    isLoading: ko.observable(false),
 
     onClickPlace: onClickPalace,
     onClickMarker: onClickMarker,
@@ -71,7 +74,13 @@
 
     const lat = map.center.lat(),
           lng = map.center.lng();
-    console.log('lat', lat, 'lng', lng);
+
+    //distance between this point and last request
+    let distance = google.maps.geometry.spherical.computeDistanceBetween(lastQueryLocation, map.center);
+    // don't load new data if point is too close to previous search
+    if (distance < 1000) return;
+    lastQueryLocation = map.center;
+    console.log('lat', lat, 'lng', lng, 'dist', distance);
     //TODO idea, calculate radius from map zoom
     const requestOptions = {
       ll: lat + ',' + lng,
@@ -81,7 +90,15 @@
       client_secret: 'T4O0ZURMG00IGUTU4NKSQZ4DH0E5LGLMDAE20OJWPXMBD10Y',
       v: 20160909
     };
-    $.get('https://api.foursquare.com/v2/venues/explore', requestOptions, app.controller.addPlaces);
+    app.model.isLoading(true);
+    $.get('https://api.foursquare.com/v2/venues/explore', requestOptions, app.controller.addPlaces)
+      .fail(function(){
+        //todo say user smth
+      })
+      .always(function() {
+        console.log('finish');
+        app.model.isLoading(false);
+      });
   };
 
   app.controller.addPlaces = function(res) {
@@ -93,11 +110,13 @@
 
       const place = new Place(item);
       app.model.places.push(place);
-      app.model.placesHash.set(place.stash.venue.id, place);
+      console.log('item.venue.id', item.venue.id);
+      app.model.placesHash.set(item.venue.id, place);
       app.model.markers.set(place.marker, place);
 
     });
     console.log('after add', app.model.places());
+    app.model.isLoading(false);
   };
 
 
@@ -135,6 +154,8 @@
     place.marker.setIcon(G_MARKER_SELECTED);
     app.model.placeInFocus(place);
     app.model.isPlaceInFocusVisible(true);
+
+    app.model.map.panTo(place.location);
   }
 
   function onClickMarker() {
@@ -147,7 +168,7 @@
     path: 'M0-48c-9.8 0-17.7 7.8-17.7 17.4 0 15.5 17.7 30.6 17.7 30.6s17.7-15.4 17.7-30.6c0-9.6-7.9-17.4-17.7-17.4z',
     fillColor: '#607d8b',
     fillOpacity: 0.7,
-    scale: 0.8,
+    scale: 0.7,
     strokeColor: '#607d8b',
     strokeWeight: 3
   };
@@ -156,7 +177,7 @@
     path: 'M0-48c-9.8 0-17.7 7.8-17.7 17.4 0 15.5 17.7 30.6 17.7 30.6s17.7-15.4 17.7-30.6c0-9.6-7.9-17.4-17.7-17.4z',
     fillColor: '#009688',
     fillOpacity: 0.8,
-    scale: 0.7,
+    scale: 0.8,
     strokeColor: '#009688',
     strokeWeight: 3
   };
