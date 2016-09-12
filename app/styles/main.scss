@@ -86,14 +86,37 @@ footer.app-footer {
   }
 }
 
-/*
-.place-infocus {
+@mixin modal {
   position: absolute;
-  right: 0;
-  top: 0;
+  right: 6px;
+  top: 6px;
   width: 300px;
-  min-height: 80px;
-  background-color: #0095dd;
+  min-height: 60px;
+  background-color: #FAFAFA;
+  visibility: hidden;
+  &.is-visible {
+    visibility: visible;
+  }
+
+  .hide-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    height: 36px;
+    width: 36px;
+    min-height: 36px;
+    min-width: 36px;
+  }
 }
 
-*/
+.place-infocus {
+  @include modal;
+  .mdl-card__supporting-text {
+    padding: 8px 16px;
+  }
+}
+
+.failure-modal {
+  @include modal;
+}
+

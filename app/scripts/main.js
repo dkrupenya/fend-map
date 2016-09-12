@@ -35,6 +35,10 @@
 
     placeInFocus: ko.observable(),
     isPlaceInFocusVisible: ko.observable(false),
+    hideDetailsModal: () => {app.model.isPlaceInFocusVisible(false)},
+
+    isFailureModelVisible: ko.observable(false),
+    hideFailureModal: () => {app.model.isFailureModelVisible(false)},
 
     textFilter: ko.observable(''),
 
@@ -57,7 +61,9 @@
     const myOptions = {
       zoom: 13,
       center: new google.maps.LatLng(37.7703706, -122.3871226),
-      mapTypeId: google.maps.MapTypeId.ROADMAP
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeControl: false,
+      streetViewControl: false
     };
     const map =  new google.maps.Map(document.getElementById('google-map'), myOptions);
     app.model.map = map;
@@ -94,6 +100,7 @@
     $.get('https://api.foursquare.com/v2/venues/explore', requestOptions, app.controller.addPlaces)
       .fail(function(){
         //todo say user smth
+        app.model.isFailureModelVisible(true);
       })
       .always(function() {
         console.log('finish');
@@ -156,6 +163,12 @@
     app.model.isPlaceInFocusVisible(true);
 
     app.model.map.panTo(place.location);
+
+    // hide side menu on small screens
+    if(window.matchMedia('(max-width: 426px)').matches) {
+      $('.mdl-layout__drawer').removeClass('is-visible');
+      $('.mdl-layout__obfuscator').removeClass('is-visible');
+    }
   }
 
   function onClickMarker() {

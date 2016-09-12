@@ -88,23 +88,42 @@
     <main class="mdl-layout__content app-main">
       <div class="map-wrapper">
         <div id="google-map" class="google-map"></div>
-        <div class="place-infocus" data-bind="with: placeInFocus">
-          <div>Title: <span data-bind="text: name"></span></div>
-          <div>URL: <span data-bind="text: stash.venue.url"></span></div>
-          <div>phone: <span data-bind="text: stash.venue.contact.formattedPhone"></span></div>
-          <div>Rating: <span data-bind="text: stash.venue.rating"></span></div>
-          <div>categories:
-            <!-- ko foreach: stash.venue.categories -->
-            <span data-bind="text: $data.shortName"></span>,
-            <!-- /ko -->
-          </div>
-        </div>
       </div>
 
+      <div class="place-infocus mdl-card mdl-shadow--2dp" data-bind="with: placeInFocus, css: {'is-visible': isPlaceInFocusVisible}">
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text" data-bind="text: name"></h2>
+        </div>
+        <button class="hide-button mdl-button mdl-js-button mdl-button--fab"
+                data-bind="click: $parent.hideDetailsModal.bind($parent)">
+          <i class="material-icons">clear</i>
+        </button>
+        <div class="mdl-card__supporting-text">Rating: <span data-bind="text: stash.venue.rating"></span></div>
+        <div class="mdl-card__supporting-text">categories:
+          <!-- ko foreach: stash.venue.categories -->
+          <span data-bind="text: $data.shortName"></span>
+          <!-- /ko -->
+        </div>
+        <div class="mdl-card__supporting-text">phone: <span data-bind="text: stash.venue.contact.formattedPhone"></span></div>
+        <!--
+        <div class="mdl-card__supporting-text">URL: <span data-bind="text: stash.venue.url"></span></div>
+        -->
+      </div>
+
+      <!-- failed to load data -->
+      <div class="failure-modal mdl-card mdl-shadow--2dp" data-bind="css: {'is-visible': isFailureModelVisible}">
+        <div class="mdl-card__title">
+          <h3 class="mdl-card__title-text">Smth goes wrong</h3>
+        </div>
+        <button class="hide-button mdl-button mdl-js-button mdl-button--fab"
+                data-bind="click: hideFailureModal.bind(null)">
+          <i class="material-icons">clear</i>
+        </button>
+      </div>
     </main>
     <footer class="app-footer mdl-mini-footer">
       <div class="mdl-mini-footer__right-section">
-        <div class="mdl-logo">Two Beer or not Two Beer, 2016</div>
+        <div class="mdl-logo">2016</div>
       </div>
     </footer>
   </div >
