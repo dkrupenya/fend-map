@@ -28,6 +28,7 @@
   app.model = {
     map: null, // google map object
     places: ko.observableArray([]), // places marked on the map
+    placesHash: new WeakMap(),
     markers: new WeakMap(),
     selectedPlaces: new Set(),
 
@@ -78,7 +79,7 @@
       section: 'drinks',
       client_id: 'E54BQ11LCWJ15Q0FH4MELITI2CZQ5KSJOU53TNRARJ3HHNXN',
       client_secret: 'T4O0ZURMG00IGUTU4NKSQZ4DH0E5LGLMDAE20OJWPXMBD10Y',
-      v: 20160815
+      v: 20160909
     };
     $.get('https://api.foursquare.com/v2/venues/explore', requestOptions, app.controller.addPlaces);
   };
@@ -86,17 +87,19 @@
   app.controller.addPlaces = function(res) {
     //app.model.places.removeAll();
     console.log('4 square', res);
-    console.log('4 square Items: ',res.response.groups[0].items);
-    res.response.groups[0].items.map(function(item) {
+    console.log('4 square Items: ', res.response.groups[0].items);
+    res.response.groups[0].items.forEach(function(item) {
+      if(app.model.placesHash.has(item.venue.id)) return; // don't allow to repeat items
 
       const place = new Place(item);
       app.model.places.push(place);
+      app.model.placesHash.set(place.stash.venue.id, place);
       app.model.markers.set(place.marker, place);
 
-      return place.name + ': ' + place.location.lat + ',' + place.location.lng;
     });
     console.log('after add', app.model.places());
   };
+
 
   function Place(item) {
     const map = app.model.map;
