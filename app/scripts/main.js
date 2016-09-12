@@ -66,7 +66,7 @@
     console.log('bounds_changed', map);
 
     // dont ask 4square on big areas
-    if (map.zoom < 17) return;
+    if (map.zoom < 16) return;
 
     const lat = map.center.lat(),
           lng = map.center.lng();
@@ -142,19 +142,19 @@
 
   const G_MARKER = {
     path: 'M0-48c-9.8 0-17.7 7.8-17.7 17.4 0 15.5 17.7 30.6 17.7 30.6s17.7-15.4 17.7-30.6c0-9.6-7.9-17.4-17.7-17.4z',
-    fillColor: 'blue',
-    fillOpacity: 0.8,
+    fillColor: '#607d8b',
+    fillOpacity: 0.7,
     scale: 0.8,
-    strokeColor: 'blue',
+    strokeColor: '#607d8b',
     strokeWeight: 3
   };
 
   const G_MARKER_SELECTED = {
     path: 'M0-48c-9.8 0-17.7 7.8-17.7 17.4 0 15.5 17.7 30.6 17.7 30.6s17.7-15.4 17.7-30.6c0-9.6-7.9-17.4-17.7-17.4z',
-    fillColor: 'green',
+    fillColor: '#009688',
     fillOpacity: 0.8,
-    scale: 0.8,
-    strokeColor: 'green',
+    scale: 0.7,
+    strokeColor: '#009688',
     strokeWeight: 3
   };
 

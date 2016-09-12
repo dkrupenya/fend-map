@@ -27,6 +27,14 @@ html, body {
 }
 
 .app-header {
+  @media only screen and (max-width: 426px) {
+    .mdl-layout__header-row {
+      padding-left: 52px;
+    }
+    .mdl-layout-title {
+      font-size: 18px;
+    }
+  }
 }
 
 .app-main {
@@ -34,9 +42,13 @@ html, body {
 }
 
 footer.app-footer {
+  @media only screen and (max-width: 426px) {
+    padding: 4px 8px;
+  }
   padding: 16px;
   .mdl-logo {
     line-height: 32px;
+    margin-bottom: 0;
   }
 }
 
