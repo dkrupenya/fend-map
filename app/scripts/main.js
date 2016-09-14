@@ -98,8 +98,25 @@
    */
   app.controller.initApp = function initApp() {
     // init google map
+
     const map =  new google.maps.Map(document.getElementById('google-map'), GOOGLE_MAP_OPTIONS);
     app.model.map = map;
+
+    // Try HTML5 geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        map.setCenter(pos);
+      }, function() {
+        //handleLocationError
+      });
+    } else {
+      // Browser doesn't support Geolocation
+    }
 
     map.addListener('bounds_changed', _.throttle(app.controller.loadPlaces, 3000));
   };
