@@ -59,7 +59,7 @@
   app.model = {
     map: null,                      // google map object
 
-    places: ko.observableArray([]), // main places storage
+    places: ko.observableArray([]).extend({ rateLimit: 100 }), // main places storage
     placesHash: new Map(),          // helps to search place from foursquare place id
     markers: new WeakMap(),         // helps to search place from google marker
     selectedPlaces: new Set(),      // places marked on the map todo not in use now
@@ -158,9 +158,27 @@
       app.model.markers.set(place.marker, place);
 
     });
+
+    // not more than 150 markers on the map
+    let length = app.model.places.length;
+    if (length > 150) app.controller.removePlacesFromStart(length - 150);
+
     app.model.isLoading(false);
   };
 
+  /**
+   * remove N places form the beginning of Array
+   * @param N
+     */
+  app.controller.removePlacesFromStart = function (N) {
+    let place;
+    for (let i = 0; i < N; i++) {
+      place = app.model.places.shift();
+      place.marker.setMap(null);
+      app.model.placesHash.delete(place.stash.venue.id);
+      if (app.model.placeInFocus() === place) app.model.placeInFocus(null);
+    }
+  };
 
   /**
    * map place

@@ -110,8 +110,8 @@ gulp.task('scripts', () =>
       //       you need to explicitly list your scripts here in the right order
       //       to be correctly concatenated
       './app/scripts/vendor/jquery.min.js',
-      './app/scripts/vendor/knockout-latest.js',
       './app/scripts/vendor/lodash.min.js',
+      './app/scripts/vendor/knockout-latest.js',
       './app/scripts/main.js'
       // Other scripts
     ])
@@ -143,19 +143,19 @@ gulp.task('html', () => {
 
     // Concatenate and minify styles
     // In case you are still using useref build blocks
-    .pipe($.if('*.css', $.cssnano()))
+    //.pipe($.if('*.css', $.cssnano()))
 
     // Minify any HTML
     .pipe($.if('*.html', $.htmlmin({
       removeComments: true,
       //collapseWhitespace: true,
-      collapseBooleanAttributes: true,
-      removeAttributeQuotes: true,
-      removeRedundantAttributes: true,
-      removeEmptyAttributes: true,
-      removeScriptTypeAttributes: true,
-      removeStyleLinkTypeAttributes: true,
-      removeOptionalTags: true
+      // collapseBooleanAttributes: true,
+      // removeAttributeQuotes: true,
+      // removeRedundantAttributes: true,
+      // removeEmptyAttributes: true,
+      // removeScriptTypeAttributes: true,
+      // removeStyleLinkTypeAttributes: true,
+      // removeOptionalTags: true
     })))
     // Output files
     .pipe($.if('*.html', $.size({title: 'html', showFiles: true})))
