@@ -83,6 +83,12 @@
       return _.filter(places, place => place.name.toLowerCase().indexOf(text) !== -1 );
     }),
 
+    isPlacesNotLoaded: ko.pureComputed(() => {
+      let places = app.model.places();
+      console.log('places', places.length);
+      return places.length === 0;
+    }),
+
     // show spinner?
     isLoading: ko.observable(false),
 
@@ -177,7 +183,7 @@
     });
 
     // not more than 150 markers on the map
-    let length = app.model.places.length;
+    let length = app.model.places().length;
     if (length > 150) app.controller.removePlacesFromStart(length - 150);
 
     app.model.isLoading(false);

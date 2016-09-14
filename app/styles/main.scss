@@ -80,6 +80,11 @@ footer.app-footer {
   height: 100%;
 }
 
+.place-list {
+  flex: 1;
+  overflow: auto;
+}
+
 .place-list__item {
   &.is-selected {
     background-color: #008072;
