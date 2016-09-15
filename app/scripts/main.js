@@ -60,16 +60,16 @@
     //Selected place
     placeDetails: ko.observable(),
     isPlaceDetailsVisible: ko.observable(false),
-    hidePlaceDetails: () => { this.isPlaceDetailsVisible(false) },
+    hidePlaceDetails: () => { app.viewModel.isPlaceDetailsVisible(false) },
 
     // error message
     isFailureModalVisible: ko.observable(false),
-    hideFailureModal: () => { this.isFailureModalVisible(false) },
+    hideFailureModal: () => { app.viewModel.isFailureModalVisible(false) },
 
     textFilter: ko.observable(''),
 
     filteredPlaces: ko.pureComputed(() => {
-      let text = app.model.textFilter().trim().toLowerCase(),
+      let text = app.viewModel.textFilter().trim().toLowerCase(),
         places = app.model.places();
       if (!text) return places;
 
@@ -179,7 +179,7 @@
    * @param res - results from foursquare request
    */
   function addPlaces(res) {
-    //app.model.places.removeAll();
+    //app.controller.removeAllPlaces();
 
     res.response.groups[0].items.forEach(function (item) {
       if (app.model.placesHash.has(item.venue.id)) return; // don't allow to double items on the map
@@ -217,30 +217,26 @@
     app.controller.removePlacesFromStart(N);
   }
 
-
   /**
    * user clicks on a place in the menu
    * @param place
    */
   function onClickPlace(place) {
-    if (app.model.selectedPlaces.has(place)) return;
+    const oldSelected = app.viewModel.placeDetails();
+    if (oldSelected === place) return;
 
-    // remove all selected
-    for (let selected of app.model.selectedPlaces) {
-      selected.isSelected(false);
-      selected.marker.setIcon(G_MARKER);
-      app.model.selectedPlaces.delete(selected);
+    if(oldSelected) {
+      oldSelected.isSelected(false);
+      oldSelected.marker.setIcon(G_MARKER);
     }
 
-    //add place to selected
+    //add place to selected and show place details modal window
     place.isSelected(true);
-    app.model.selectedPlaces.add(place);
-
-    // change marker icon and show place details modal window
-    place.marker.setIcon(G_MARKER_SELECTED);
     app.viewModel.placeDetails(place);
     app.viewModel.isPlaceDetailsVisible(true);
 
+    // change marker icon and move map to this marker
+    place.marker.setIcon(G_MARKER_SELECTED);
     app.model.map.panTo(place.location);
 
     // hide side menu on small screens after click
