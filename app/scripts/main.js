@@ -1,32 +1,13 @@
-/*!
- *
- *  Web Starter Kit
- *  Copyright 2015 Google Inc. All rights reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *    https://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License
- *
- */
 /* eslint-env browser */
-(function() {
+(function () {
   'use strict';
 
-  // Your custom JavaScript goes here
   const app = {};
   let lastQueryLocation = new google.maps.LatLng({lat: 0, lng: 0});
 
   /* CONSTANTS */
   const GOOGLE_MAP_OPTIONS = {
-    zoom: 13,
+    zoom: 16,
     center: new google.maps.LatLng(37.7703706, -122.3871226),
     mapTypeId: google.maps.MapTypeId.ROADMAP,
     mapTypeControl: false,
@@ -53,84 +34,92 @@
 
 
   /* CONTROLLER */
-  app.controller = {};
+  app.controller = {
+    initApp: initApp,
+    loadPlaces: loadPlaces,           // load places from Foursquare
+
+    onClickPlace: onClickPlace,      // handle sidebar clicks
+    onClickMarker: onClickMarker,      // handle map clicks
+
+    addPlaces: addPlaces,
+    removePlacesFromStart: removePlacesFromStart,
+    removeAllPlaces: removeAllPlaces,
+  };
 
   /* MODEL */
   app.model = {
     map: null,                      // google map object
 
-    places: ko.observableArray([]).extend({ rateLimit: 100 }), // main places storage
+    places: ko.observableArray([]).extend({rateLimit: 100}), // main places storage
     placesHash: new Map(),          // helps to search place from foursquare place id
-    markers: new WeakMap(),         // helps to search place from google marker
-    selectedPlaces: new Set(),      // places marked on the map todo not in use now
+    markers: new WeakMap()          // helps to search place from google marker
+  };
 
+  /* VIEW MODEL*/
+  app.viewModel = {
     //Selected place
-    placeInFocus: ko.observable(),
-    isPlaceInFocusVisible: ko.observable(false),
-    hideDetailsModal: () => {app.model.isPlaceInFocusVisible(false)},
+    placeDetails: ko.observable(),
+    isPlaceDetailsVisible: ko.observable(false),
+    hidePlaceDetails: () => { this.isPlaceDetailsVisible(false) },
 
     // error message
     isFailureModalVisible: ko.observable(false),
-    hideFailureModal: () => {app.model.isFailureModelVisible(false)},
+    hideFailureModal: () => { this.isFailureModalVisible(false) },
 
     textFilter: ko.observable(''),
 
     filteredPlaces: ko.pureComputed(() => {
       let text = app.model.textFilter().trim().toLowerCase(),
-          places = app.model.places();
+        places = app.model.places();
       if (!text) return places;
 
-      return _.filter(places, place => place.name.toLowerCase().indexOf(text) !== -1 );
+      return _.filter(places, place => place.name.toLowerCase().indexOf(text) !== -1);
     }),
 
     isPlacesNotLoaded: ko.pureComputed(() => {
       let places = app.model.places();
-      console.log('places', places.length);
       return places.length === 0;
     }),
 
     // show spinner?
     isLoading: ko.observable(false),
 
-    // click on a place in menu handler
-    onClickPlace: onClickPalace,
-
-    // click on a map marker handler
-    onClickMarker: onClickMarker,
+    onClickPlace: app.controller.onClickPlace
   };
 
   /**
    *  create a map, add map listener
    */
-  app.controller.initApp = function initApp() {
+  function initApp() {
     // init google map
 
-    const map =  new google.maps.Map(document.getElementById('google-map'), GOOGLE_MAP_OPTIONS);
+    const map = new google.maps.Map(document.getElementById('google-map'), GOOGLE_MAP_OPTIONS);
     app.model.map = map;
 
     // Try HTML5 geolocation
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
+      navigator.geolocation.getCurrentPosition(function (position) {
         var pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
 
+        app.controller.removeAllPlaces();
         map.setCenter(pos);
-      }, function() {
+      }, function () {
         //handleLocationError
       });
     } else {
       // Browser doesn't support Geolocation
     }
 
-    map.addListener('bounds_changed', _.throttle(app.controller.loadPlaces, 3000));
-  };
+    map.addListener('bounds_changed', _.throttle(app.controller.loadPlaces, 2000));
+  }
 
   /**
-   * load bars from 4square
+   * load places from 4square
    */
-  app.controller.loadPlaces = function loadPlaces() {
+  function loadPlaces() {
     const map = app.model.map;
 
     // dont ask 4square on big areas
@@ -139,16 +128,14 @@
     //distance between this point and last request
     let distance = google.maps.geometry.spherical.computeDistanceBetween(lastQueryLocation, map.center);
     // don't load new data if point is too close to previous search
-    if (distance < 1000) return;
+    if (distance < 1500) return;
     lastQueryLocation = map.center;
-    app.model.isLoading(true);
+    app.viewModel.isLoading(true);
 
     // load data from foursquare
     //TODO idea, calculate radius from map zoom
-    const lat = map.center.lat(),
-          lng = map.center.lng();
     const FoursquareRequestOptions = {
-      ll: lat + ',' + lng,
+      ll: map.center.lat() + ',' + map.center.lng(),
       radius: 2000,
       section: 'drinks',
       client_id: 'E54BQ11LCWJ15Q0FH4MELITI2CZQ5KSJOU53TNRARJ3HHNXN',
@@ -156,24 +143,46 @@
       v: 20160909
     };
     $.get('https://api.foursquare.com/v2/venues/explore', FoursquareRequestOptions, app.controller.addPlaces)
-      .fail(function(){
-        app.model.isFailureModelVisible(true);
+      .fail(function () {
+        app.viewModel.isFailureModalVisible(true);
       })
-      .always(function() {
-        app.model.isLoading(false);
+      .always(function () {
+        app.viewModel.isLoading(false);
       });
-  };
+  }
 
+  /**
+   * map place constructor
+   * @param item - one place from foursquare API response
+   * @constructor
+   */
+  function Place(item) {
+    const map = app.model.map;
+    const lat = item.venue.location.lat,
+      lng = item.venue.location.lng,
+      name = item.venue.name;
+
+    this.stash = item;
+    this.location = {lat, lng};
+    this.name = name;
+    this.isSelected = ko.observable(false);
+    this.marker = new google.maps.Marker({
+      map: map,
+      position: new google.maps.LatLng(lat, lng),
+      icon: G_MARKER,
+    });
+    this.marker.addListener('click', app.controller.onClickMarker);
+  }
 
   /**
    * add places to the map
    * @param res - results from foursquare request
    */
-  app.controller.addPlaces = function(res) {
+  function addPlaces(res) {
     //app.model.places.removeAll();
 
-    res.response.groups[0].items.forEach(function(item) {
-      if(app.model.placesHash.has(item.venue.id)) return; // don't allow to double items on the map
+    res.response.groups[0].items.forEach(function (item) {
+      if (app.model.placesHash.has(item.venue.id)) return; // don't allow to double items on the map
 
       const place = new Place(item);
       app.model.places.push(place);
@@ -186,51 +195,34 @@
     let length = app.model.places().length;
     if (length > 150) app.controller.removePlacesFromStart(length - 150);
 
-    app.model.isLoading(false);
-  };
+    app.viewModel.isLoading(false);
+  }
 
   /**
-   * remove N places form the beginning of Array
+   * remove N places form the beginning of tha places array
    * @param N
-     */
-  app.controller.removePlacesFromStart = function (N) {
+   */
+  function removePlacesFromStart(N) {
     let place;
     for (let i = 0; i < N; i++) {
       place = app.model.places.shift();
       place.marker.setMap(null);
       app.model.placesHash.delete(place.stash.venue.id);
-      if (app.model.placeInFocus() === place) app.model.placeInFocus(null);
+      if (app.viewModel.placeDetails() === place) app.viewModel.placeDetails(null);
     }
-  };
-
-  /**
-   * map place
-   * @param item - one place from foursquare API response
-   * @constructor
-   */
-  function Place(item) {
-    const map = app.model.map;
-    const lat = item.venue.location.lat,
-          lng = item.venue.location.lng,
-          name = item.venue.name;
-
-    this.stash = item;
-    this.location = {lat, lng};
-    this.name = name;
-    this.isSelected = ko.observable(false);
-    this.marker = new google.maps.Marker({
-      map: map,
-      position: new google.maps.LatLng(lat, lng),
-      icon: G_MARKER,
-    });
-    this.marker.addListener('click', onClickMarker);
   }
+
+  function removeAllPlaces() {
+    let N = app.model.places().length;
+    app.controller.removePlacesFromStart(N);
+  }
+
 
   /**
    * user clicks on a place in the menu
    * @param place
    */
-  function onClickPalace(place) {
+  function onClickPlace(place) {
     if (app.model.selectedPlaces.has(place)) return;
 
     // remove all selected
@@ -246,13 +238,13 @@
 
     // change marker icon and show place details modal window
     place.marker.setIcon(G_MARKER_SELECTED);
-    app.model.placeInFocus(place);
-    app.model.isPlaceInFocusVisible(true);
+    app.viewModel.placeDetails(place);
+    app.viewModel.isPlaceDetailsVisible(true);
 
     app.model.map.panTo(place.location);
 
     // hide side menu on small screens after click
-    if(window.matchMedia('(max-width: 426px)').matches) {
+    if (window.matchMedia('(max-width: 426px)').matches) {
       $('.mdl-layout__drawer').removeClass('is-visible');
       $('.mdl-layout__obfuscator').removeClass('is-visible');
     }
@@ -263,12 +255,12 @@
    */
   function onClickMarker() {
     const place = app.model.markers.get(this);
-    onClickPalace(place);
+    app.controller.onClickPlace(place);
   }
 
-  // init app after loading page
-  $(function() {
-    ko.applyBindings(app.model);
+  // init app after page loading
+  $(function () {
+    ko.applyBindings(app.viewModel);
     app.controller.initApp();
   });
 })();

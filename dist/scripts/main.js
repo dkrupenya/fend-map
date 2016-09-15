@@ -65,9 +65,9 @@
     selectedPlaces: new Set(), // places marked on the map todo not in use now
 
     //Selected place
-    placeInFocus: ko.observable(),
+    placeDetails: ko.observable(),
     isPlaceInFocusVisible: ko.observable(false),
-    hideDetailsModal: function hideDetailsModal() {app.model.isPlaceInFocusVisible(false);},
+    hidePlaceDetails: function hidePlaceDetails() {app.model.isPlaceInFocusVisible(false);},
 
     // error message
     isFailureModalVisible: ko.observable(false),
@@ -246,7 +246,7 @@
 
     // change marker icon and show place details modal window
     place.marker.setIcon(G_MARKER_SELECTED);
-    app.model.placeInFocus(place);
+    app.model.placeDetails(place);
     app.model.isPlaceInFocusVisible(true);
 
     app.model.map.panTo(place.location);
