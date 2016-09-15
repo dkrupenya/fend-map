@@ -39,19 +39,19 @@ const reload = browserSync.reload;
 
 // Lint JavaScript
 gulp.task('lint', () =>
-  gulp.src('app/scripts/*.js')
+  gulp.src('app/scripts/**/*.js')
     // .pipe($.eslint())
     // .pipe($.eslint.format())
-    // .pipe($.if(!browserSync.active, $.eslint.failOnError()))
+    .pipe($.if(!browserSync.active, $.eslint.failOnError()))
 );
 
 // Optimize images
 gulp.task('images', () =>
   gulp.src('app/images/**/*')
-    // .pipe($.cache($.imagemin({
-    //   progressive: true,
-    //   interlaced: true
-    // })))
+    .pipe($.cache($.imagemin({
+      progressive: true,
+      interlaced: true
+    })))
     .pipe(gulp.dest('dist/images'))
     .pipe($.size({title: 'images'}))
 );
@@ -84,10 +84,10 @@ gulp.task('styles', () => {
 
   // For best performance, don't add Sass partials to `gulp.src`
   return gulp.src([
-    'app/styles/**/*.scss',
-    'app/styles/**/*.css'
-  ])
-    //.pipe($.newer('.tmp/styles'))
+      'app/styles/**/*.scss',
+      'app/styles/**/*.css'
+    ])
+    .pipe($.newer('.tmp/styles'))
     .pipe($.sourcemaps.init())
     .pipe($.sass({
       precision: 10
@@ -104,55 +104,69 @@ gulp.task('styles', () => {
 // Concatenate and minify JavaScript. Optionally transpiles ES2015 code to ES5.
 // to enables ES2015 support remove the line `"only": "gulpfile.babel.js",` in the
 // `.babelrc` file.
-gulp.task('scripts', () =>
-    gulp.src([
+gulp.task('scripts:mine', () =>
+  gulp.src([
       // Note: Since we are not using useref in the scripts build pipeline,
       //       you need to explicitly list your scripts here in the right order
       //       to be correctly concatenated
-      'app/scripts/**/*'
+      'app/scripts/main.js'
       // Other scripts
     ])
-      //.pipe($.newer('.tmp/scripts'))
-      .pipe($.sourcemaps.init())
-      .pipe($.babel())
-      .pipe($.sourcemaps.write())
-      .pipe(gulp.dest('dist/scripts'))
-      //.pipe(gulp.dest('.tmp/scripts'))
-      //.pipe($.concat('main.min.js'))
-      //.pipe($.uglify({preserveComments: 'some'}))
-      // Output files
-      .pipe($.size({title: 'scripts'}))
-      //.pipe($.sourcemaps.write('.'))
+    .pipe($.newer('.tmp/scripts'))
+    .pipe($.sourcemaps.init())
+    .pipe($.babel())
+    .pipe($.sourcemaps.write())
+    .pipe(gulp.dest('.tmp/scripts'))
+    .pipe($.concat('main.js'))
+    .pipe($.uglify({preserveComments: 'some'}))
+    // Output files
+    .pipe($.size({title: 'scripts:mine'}))
+    .pipe($.sourcemaps.write('.'))
+    .pipe(gulp.dest('dist/scripts'))
+);
+
+gulp.task('scripts:vendor', () =>
+  gulp.src([
+      // Note: Since we are not using useref in the scripts build pipeline,
+      //       you need to explicitly list your scripts here in the right order
+      //       to be correctly concatenated
+      'app/scripts/vendor/jquery.min.js',
+      'app/scripts/vendor/knockout-latest.js',
+      'app/scripts/vendor/lodash.min.js'
+    ], {base: 'app/scripts'})
+    // Output files
+    .pipe($.size({title: 'scripts:vendor'}))
+    .pipe(gulp.dest('dist/scripts'))
 );
 
 // Scan your HTML for assets & optimize them
 gulp.task('html', () => {
   return gulp.src('app/**/*.html')
-    // .pipe($.useref({searchPath: '{.tmp,app}'}))
-    // // Remove any unused CSS
-    // .pipe($.if('*.css', $.uncss({
-    //   html: [
-    //     'app/index.html'
-    //   ],
-    //   // CSS Selectors for UnCSS to ignore
-    //   ignore: []
-    // })))
+    .pipe($.useref({searchPath: '{.tmp,app}'}))
+    // Remove any unused CSS
+    .pipe($.if('*.css', $.uncss({
+      html: [
+        'app/index.html'
+      ],
+      // CSS Selectors for UnCSS to ignore
+      ignore: []
+    })))
 
     // Concatenate and minify styles
     // In case you are still using useref build blocks
-    //.pipe($.if('*.css', $.cssnano()))
+    .pipe($.if('*.css', $.cssnano()))
 
     // Minify any HTML
     .pipe($.if('*.html', $.htmlmin({
-      //removeComments: true,
-      //collapseWhitespace: true,
-      // collapseBooleanAttributes: true,
-      // removeAttributeQuotes: true,
-      // removeRedundantAttributes: true,
-      // removeEmptyAttributes: true,
-      // removeScriptTypeAttributes: true,
-      // removeStyleLinkTypeAttributes: true,
-      // removeOptionalTags: true
+//      removeComments: true,
+//      collapseWhitespace: true,
+      collapseBooleanAttributes: true,
+      removeAttributeQuotes: true,
+      removeRedundantAttributes: true,
+      removeEmptyAttributes: true,
+      removeScriptTypeAttributes: true,
+      removeStyleLinkTypeAttributes: true,
+      removeOptionalTags: true
     })))
     // Output files
     .pipe($.if('*.html', $.size({title: 'html', showFiles: true})))
@@ -163,7 +177,7 @@ gulp.task('html', () => {
 gulp.task('clean', () => del(['.tmp', 'dist/*', '!dist/.git'], {dot: true}));
 
 // Watch files for changes & reload
-gulp.task('serve', ['scripts', 'styles'], () => {
+gulp.task('serve', ['scripts:mine', 'scripts:vendor', 'styles'], () => {
   browserSync({
     notify: false,
     // Customize the Browsersync console logging prefix
@@ -204,7 +218,9 @@ gulp.task('serve:dist', ['default'], () =>
 gulp.task('default', ['clean'], cb =>
   runSequence(
     'styles',
-    ['html', 'scripts', 'images', 'copy'],
+    ['scripts:mine', 'scripts:vendor'],
+    ['html', 'images'],
+    'copy',
     cb
   )
 );

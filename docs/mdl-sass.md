@@ -101,7 +101,7 @@ Replace the above block with the following code:
     <!-- endbuild -->
 ```
 
-Then, in your `gulpfile.babel.js` (found in the root of Web Starter Kit), edit the `scripts` task. By default it will look something like this:
+Then, in your `gulpfile.babel.old.js` (found in the root of Web Starter Kit), edit the `scripts` task. By default it will look something like this:
 
 ```js
 gulp.task('scripts', () =>

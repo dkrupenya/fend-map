@@ -123,7 +123,7 @@
     const map = app.model.map;
 
     // dont ask 4square on big areas
-    if (map.zoom < 16) return;
+    if (map.zoom < 15) return;
 
     //distance between this point and last request
     let distance = google.maps.geometry.spherical.computeDistanceBetween(lastQueryLocation, map.center);
