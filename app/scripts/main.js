@@ -83,6 +83,8 @@
 
     // show spinner?
     isLoading: ko.observable(false),
+    
+    isZoomedOut: ko.observable(false),
 
     onClickPlace: app.controller.onClickPlace
   };
@@ -121,6 +123,7 @@
    */
   function loadPlaces() {
     const map = app.model.map;
+    app.viewModel.isZoomedOut(map.zoom < 15);
 
     // dont ask 4square on big areas
     if (map.zoom < 15) return;

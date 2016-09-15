@@ -125,3 +125,12 @@ footer.app-footer {
   @include modal;
 }
 
+.zoom-in-info {
+  color: #ff5722;
+  padding: 8px 16px;
+  visibility: hidden;
+  &.is-visible {
+    visibility: visible;
+  }
+}
+
