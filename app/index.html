@@ -42,7 +42,7 @@
   <script defer src="https://code.getmdl.io/1.2.1/material.min.js"></script>
 
   <link rel="stylesheet" href="styles/main.css">
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCIbvu-3xz06tLmKHZBeFShpSOsxrppNUM&libraries=geometry"></script>
+
 
   <script src="scripts/vendor/jquery.min.js"></script>
   <script src="scripts/vendor/lodash.min.js"></script>
@@ -125,6 +125,12 @@
           <i class="material-icons">clear</i>
         </button>
       </div>
+      <!-- failed to google map -->
+      <div id="failure-modal-google" class="failure-modal mdl-card mdl-shadow--2dp">
+        <div class="mdl-card__title">
+          <h3 class="mdl-card__title-text">Google map is not available. Please, try to reload the application later.</h3>
+        </div>
+      </div>
     </main>
     <footer class="app-footer mdl-mini-footer">
       <div class="mdl-mini-footer__right-section">
@@ -145,5 +151,8 @@
   //      ga('send', 'pageview');
 </script>
 <!-- Built with love using Web Starter Kit -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCIbvu-3xz06tLmKHZBeFShpSOsxrppNUM&libraries=geometry&callback=initApp" onerror="googleError()"></script>
+
+
 </body>
 </html>

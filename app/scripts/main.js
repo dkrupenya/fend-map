@@ -3,16 +3,7 @@
   'use strict';
 
   const app = {};
-  let lastQueryLocation = new google.maps.LatLng({lat: 0, lng: 0});
-
-  /* CONSTANTS */
-  const GOOGLE_MAP_OPTIONS = {
-    zoom: 16,
-    center: new google.maps.LatLng(37.7703706, -122.3871226),
-    mapTypeId: google.maps.MapTypeId.ROADMAP,
-    mapTypeControl: false,
-    streetViewControl: false
-  };
+  let lastQueryLocation;
 
   // google map markers
   const G_MARKER = {
@@ -32,7 +23,6 @@
     strokeWeight: 3
   };
 
-
   /* CONTROLLER */
   app.controller = {
     initApp: initApp,
@@ -44,6 +34,10 @@
     addPlaces: addPlaces,
     removePlacesFromStart: removePlacesFromStart,
     removeAllPlaces: removeAllPlaces,
+
+    googleError() {
+      $('#failure-modal-google').addClass('is-visible');
+    }
   };
 
   /* MODEL */
@@ -97,9 +91,18 @@
    *  create a map, add map listener
    */
   function initApp() {
-    // init google map
+    ko.applyBindings(app.viewModel);
+    lastQueryLocation = new google.maps.LatLng({lat: 0, lng: 0});
 
-    const map = new google.maps.Map(document.getElementById('google-map'), GOOGLE_MAP_OPTIONS);
+    // init google map
+    const GOOGLE_MAP_OPTIONS = {
+      zoom: 16,
+      center: new google.maps.LatLng(37.7703706, -122.3871226),
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeControl: false,
+      streetViewControl: false
+    };
+   const map = new google.maps.Map(document.getElementById('google-map'), GOOGLE_MAP_OPTIONS);
     app.model.map = map;
 
     // Try HTML5 geolocation
@@ -276,9 +279,8 @@
     filteredPlaces.forEach((place) => place.marker.setMap(app.model.map));
   }
 
-  // init app after page loading
-  $(function () {
-    ko.applyBindings(app.viewModel);
-    app.controller.initApp();
-  });
+  // express some globals
+  window.initApp = app.controller.initApp;
+  window.googleError = app.controller.googleError;
+
 })();
