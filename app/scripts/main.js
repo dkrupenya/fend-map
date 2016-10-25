@@ -73,17 +73,14 @@
         places = app.model.places();
       if (!text) return places;
 
-      return _.filter(places, place => place.name.toLowerCase().indexOf(text) !== -1);
+      return places.filter(place => place.name.toLowerCase().indexOf(text) !== -1);
     }),
 
-    isPlacesNotLoaded: ko.pureComputed(() => {
-      let places = app.model.places();
-      return places.length === 0;
-    }),
+    isPlacesNotLoaded: ko.pureComputed(() => !app.model.places().length),
 
     // show spinner?
     isLoading: ko.observable(false),
-    
+
     isZoomedOut: ko.observable(false),
 
     onClickPlace: app.controller.onClickPlace
@@ -143,7 +140,7 @@
       section: 'drinks',
       client_id: 'E54BQ11LCWJ15Q0FH4MELITI2CZQ5KSJOU53TNRARJ3HHNXN',
       client_secret: 'T4O0ZURMG00IGUTU4NKSQZ4DH0E5LGLMDAE20OJWPXMBD10Y',
-      v: 20160909
+      v: 20161025
     };
     $.get('https://api.foursquare.com/v2/venues/explore', FoursquareRequestOptions, app.controller.addPlaces)
       .fail(function () {
@@ -176,6 +173,42 @@
     });
     this.marker.addListener('click', app.controller.onClickMarker);
   }
+
+  /**
+   * user clicks on a place in the menu
+   */
+  Place.prototype.onClick = function() {
+    const place = this;
+    const oldSelected = app.viewModel.placeDetails();
+    if (oldSelected === place) return;
+
+    if(oldSelected) {
+      oldSelected.isSelected(false);
+      oldSelected.marker.setIcon(G_MARKER);
+    }
+
+    //add place to selected and show place details modal window
+    place.isSelected(true);
+    app.viewModel.placeDetails(place);
+    app.viewModel.isPlaceDetailsVisible(true);
+
+    // change marker icon and move map to this marker
+    place.select();
+    app.model.map.panTo(place.location);
+
+    // hide side menu on small screens after click
+    if (window.matchMedia('(max-width: 426px)').matches) {
+      $('.mdl-layout__drawer').removeClass('is-visible');
+      $('.mdl-layout__obfuscator').removeClass('is-visible');
+    }
+  };
+
+  /**
+   * change marker icon on place selection
+   */
+  Place.prototype.select = function() {
+    this.marker.setIcon(G_MARKER_SELECTED);
+  };
 
   /**
    * add places to the map
@@ -221,40 +254,11 @@
   }
 
   /**
-   * user clicks on a place in the menu
-   * @param place
-   */
-  function onClickPlace(place) {
-    const oldSelected = app.viewModel.placeDetails();
-    if (oldSelected === place) return;
-
-    if(oldSelected) {
-      oldSelected.isSelected(false);
-      oldSelected.marker.setIcon(G_MARKER);
-    }
-
-    //add place to selected and show place details modal window
-    place.isSelected(true);
-    app.viewModel.placeDetails(place);
-    app.viewModel.isPlaceDetailsVisible(true);
-
-    // change marker icon and move map to this marker
-    place.marker.setIcon(G_MARKER_SELECTED);
-    app.model.map.panTo(place.location);
-
-    // hide side menu on small screens after click
-    if (window.matchMedia('(max-width: 426px)').matches) {
-      $('.mdl-layout__drawer').removeClass('is-visible');
-      $('.mdl-layout__obfuscator').removeClass('is-visible');
-    }
-  }
-
-  /**
    * user clicks on a map marker
    */
   function onClickMarker() {
     const place = app.model.markers.get(this);
-    app.controller.onClickPlace(place);
+    place.onClick();
   }
 
   // init app after page loading
