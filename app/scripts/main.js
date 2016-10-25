@@ -69,11 +69,18 @@
     textFilter: ko.observable(''),
 
     filteredPlaces: ko.pureComputed(() => {
+      let filteredPlaces;
       let text = app.viewModel.textFilter().trim().toLowerCase(),
         places = app.model.places();
-      if (!text) return places;
+      if (text) {
+        filteredPlaces = places.filter(place => place.name.toLowerCase().indexOf(text) !== -1);
+      } else {
+        filteredPlaces = places; // show all if search field is empty
+      }
 
-      return places.filter(place => place.name.toLowerCase().indexOf(text) !== -1);
+      filterMarkers(filteredPlaces);
+
+      return filteredPlaces;
     }),
 
     isPlacesNotLoaded: ko.pureComputed(() => !app.model.places().length),
@@ -175,35 +182,6 @@
   }
 
   /**
-   * user clicks on a place in the menu
-   */
-  Place.prototype.onClick = function() {
-    const place = this;
-    const oldSelected = app.viewModel.placeDetails();
-    if (oldSelected === place) return;
-
-    if(oldSelected) {
-      oldSelected.isSelected(false);
-      oldSelected.marker.setIcon(G_MARKER);
-    }
-
-    //add place to selected and show place details modal window
-    place.isSelected(true);
-    app.viewModel.placeDetails(place);
-    app.viewModel.isPlaceDetailsVisible(true);
-
-    // change marker icon and move map to this marker
-    place.select();
-    app.model.map.panTo(place.location);
-
-    // hide side menu on small screens after click
-    if (window.matchMedia('(max-width: 426px)').matches) {
-      $('.mdl-layout__drawer').removeClass('is-visible');
-      $('.mdl-layout__obfuscator').removeClass('is-visible');
-    }
-  };
-
-  /**
    * change marker icon on place selection
    */
   Place.prototype.select = function() {
@@ -258,7 +236,44 @@
    */
   function onClickMarker() {
     const place = app.model.markers.get(this);
-    place.onClick();
+    onClickPlace(place);
+  }
+
+  /**
+   * user clicks on a place in the menu
+   */
+  function onClickPlace(place) {
+    const oldSelected = app.viewModel.placeDetails();
+    if (oldSelected === place) return;
+
+    if(oldSelected) {
+      oldSelected.isSelected(false);
+      oldSelected.marker.setIcon(G_MARKER);
+    }
+
+    //add place to selected and show place details modal window
+    place.isSelected(true);
+    app.viewModel.placeDetails(place);
+    app.viewModel.isPlaceDetailsVisible(true);
+
+    // change marker icon and move map to this marker
+    place.select();
+    app.model.map.panTo(place.location);
+
+    // hide side menu on small screens after click
+    if (window.matchMedia('(max-width: 426px)').matches) {
+      $('.mdl-layout__drawer').removeClass('is-visible');
+      $('.mdl-layout__obfuscator').removeClass('is-visible');
+    }
+  };
+
+
+  function filterMarkers(filteredPlaces) {
+    const places = app.model.places();
+    //hide all
+    places.forEach((place) => place.marker.setMap(null));
+    //show filtered
+    filteredPlaces.forEach((place) => place.marker.setMap(app.model.map));
   }
 
   // init app after page loading
